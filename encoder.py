@@ -50,7 +50,7 @@ class ResBlock(nn.Module):
         return out
 
 
-class Encoder(nn.Modeul):
+class Encoder(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -83,10 +83,10 @@ class Encoder(nn.Modeul):
         x = self.bn3(x)
         x = self.relu(x)
 
-        x = self.avgpool(x)     # 1/4, 256 channels
+        x = self.avgpool(x)
 
         x = self.res3(x)
-        f4 = self.relu
+        f4 = self.relu(x)       # 1/4, 64 channels
 
         return f2, f4
 
@@ -95,16 +95,16 @@ class Decoder(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.conv_T_4_2 = nn.ConvTranspose2d(256, 256, kernel_size=3, stride=2, padding=1)
+        self.conv_T_4_2 = nn.ConvTranspose2d(256, 256, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.bn1 = nn.BatchNorm2d(256)
 
-        self.conv_T_2_1 = nn.ConvTranspose2d(256, 256, kernel_size=3, stride=2, padding=1)
-        self.bn2 == nn.BatchNorm2d(256)
+        self.conv_T_2_1 = nn.ConvTranspose2d(256, 256, kernel_size=3, stride=2, padding=1, output_padding=1)
+        self.bn2 = nn.BatchNorm2d(256)
 
         self.skipconv_f2 = Conv3x3(64, 256)
         self.bn_f2 = nn.BatchNorm2d(256)
 
-        self.conv_f4 = Conv3x3(256, 256)
+        self.conv_f4 = Conv3x3(64, 256)
         self.bn_f4 = nn.BatchNorm2d(256)
 
         self.conv_f4_2 = Conv3x3(256, 256)
@@ -136,7 +136,7 @@ class Decoder(nn.Module):
         f4_2 = self.relu(f4_2)
 
         f2_1 = self.conv_T_2_1(f4_2)
-        f2_1 = self.bn_f2_1(f2_1)
+        f2_1 = self.bn2(f2_1)
         f2_1 = self.relu(f2_1)
 
         f2_1 = self.conv_f2_1(f2_1)
