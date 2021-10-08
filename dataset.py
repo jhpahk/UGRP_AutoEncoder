@@ -6,9 +6,11 @@ import os
 from PIL import Image
 from torch.utils.data import Dataset
 
-class COCO_val(Dataset):
+class MPII(Dataset):
     def __init__(self):
-        self.imglist = os.listdir("data/val2017/")
+        self.imglist = os.listdir("data/images/")[:10000]
+        print(f"Successfully load {len(self.imglist)} images!")
+
         self.transform = transforms.Compose([
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
@@ -19,7 +21,7 @@ class COCO_val(Dataset):
         return len(self.imglist)
 
     def __getitem__(self, idx):
-        img = Image.open("data/val2017/" + self.imglist[idx]).convert("RGB")
+        img = Image.open("data/images/" + self.imglist[idx]).convert("RGB")
         img = self.transform(img)
 
         return img

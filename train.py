@@ -7,7 +7,7 @@ import time
 import os
 
 from encoder import AutoEncoder
-from dataset import COCO_val
+from dataset import MPII
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -24,8 +24,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3"
 writer = SummaryWriter()
 
 
-coco_data = COCO_val()
-train_loader = DataLoader(coco_data, batch_size=4, shuffle=True)
+mpii_data = MPII()
+train_loader = DataLoader(mpii_data, batch_size=32, shuffle=True)
 
 autoencoder = AutoEncoder().cuda()
 autoencoder = nn.DataParallel(autoencoder)
@@ -34,9 +34,10 @@ learning_rate = 1e-5
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.Adam(autoencoder.parameters(), lr=learning_rate)
 
-epochs = 1
+epochs = 100
 
 for epoch in range(epochs):
+    start = time.time()
     for data in train_loader:
         data = data.cuda()
         out = autoencoder(data)
@@ -45,15 +46,18 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+    end = time.time()
 
-        print(f"loss: {loss}")
+    time_cost = (end - start) / 60
 
     if epoch % 10 == 0 and epoch != 0:
         torch.save({
             'epoch': epoch,
-            'model_state_dict': model.module.state_dict(),
+            'model_state_dict': autoencoder.module.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss
-        }, CHECKPOINT_PATH)
+        }, CHECKPOINT_PATH + f"epoch_{epoch}")
 
     writer.add_scalar("Train Loss", loss, epoch)
+
+    print(f"Epoch: {epoch + 1}/{epochs} -> Loss: {loss} / Time: {time_cost} min")

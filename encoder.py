@@ -64,7 +64,7 @@ class Encoder(nn.Module):
         self.res2 = ResBlock(256, 256)
         self.bn3 = nn.BatchNorm2d(256)
 
-        self.res3 = ResBlock(256, 64)
+        self.res3 = ResBlock(256, 32)
         
         self.relu = nn.ReLU()
 
@@ -86,7 +86,7 @@ class Encoder(nn.Module):
         x = self.avgpool(x)
 
         x = self.res3(x)
-        f4 = self.relu(x)       # 1/4, 64 channels
+        f4 = self.relu(x)       # 1/4, 32 channels
 
         return f2, f4
 
@@ -104,7 +104,7 @@ class Decoder(nn.Module):
         self.skipconv_f2 = Conv3x3(64, 256)
         self.bn_f2 = nn.BatchNorm2d(256)
 
-        self.conv_f4 = Conv3x3(64, 256)
+        self.conv_f4 = Conv3x3(32, 256)
         self.bn_f4 = nn.BatchNorm2d(256)
 
         self.conv_f4_2 = Conv3x3(256, 256)
